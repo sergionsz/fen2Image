@@ -4,14 +4,13 @@ cabal-version: 2.2
 --
 -- see: https://github.com/sol/hpack
 
-name:           board
+name:           fen-to-image
 version:        0.1.0.0
-description:    Please see the README on GitHub at <https://github.com/githubuser/board#readme>
-homepage:       https://github.com/githubuser/board#readme
-bug-reports:    https://github.com/githubuser/board/issues
-author:         Author name here
-maintainer:     example@example.com
-copyright:      2025 Author name here
+description:    Generate images out of FEN strings
+homepage:       https://github.com/sergionsz/fen-to-image#readme
+bug-reports:    https://github.com/sergionsz/fen-to-image/issues
+author:         SergioNS
+copyright:      2025 SergioNS
 license:        BSD-3-Clause
 license-file:   LICENSE
 build-type:     Simple
@@ -21,59 +20,62 @@ extra-source-files:
 
 source-repository head
   type: git
-  location: https://github.com/githubuser/board
+  location: https://github.com/sergionsz/fen-to-image
 
 library
   exposed-modules:
-      Lib
+      Board
   other-modules:
-      Paths_board
+      Paths_fen_to_image
   autogen-modules:
-      Paths_board
+      Paths_fen_to_image
   hs-source-dirs:
       src
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
     , diagrams
+    , diagrams-cairo
     , diagrams-lib
     , diagrams-svg
     , split
   default-language: Haskell2010
 
-executable board-exe
+executable fen-to-image-exe
   main-is: Main.hs
   other-modules:
-      Paths_board
+      Paths_fen_to_image
   autogen-modules:
-      Paths_board
+      Paths_fen_to_image
   hs-source-dirs:
       app
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , board
     , diagrams
+    , diagrams-cairo
     , diagrams-lib
     , diagrams-svg
+    , fen-to-image
     , split
   default-language: Haskell2010
 
-test-suite board-test
+test-suite fen-to-image-test
   type: exitcode-stdio-1.0
   main-is: Spec.hs
   other-modules:
-      Paths_board
+      Paths_fen_to_image
   autogen-modules:
-      Paths_board
+      Paths_fen_to_image
   hs-source-dirs:
       test
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , board
     , diagrams
+    , diagrams-cairo
     , diagrams-lib
     , diagrams-svg
+    , fen-to-image
     , split
   default-language: Haskell2010
