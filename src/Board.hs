@@ -14,6 +14,9 @@ data PieceType = Rook | Knight | Bishop | Queen | King | Pawn deriving (Enum, Eq
 data ColorType = SquareBG | SquareEmp | PieceFG deriving (Enum, Eq)
 type Piece = (PieceType, Color)
 
+textSize :: Num a => a
+textSize = 20
+
 apply :: [b -> c] -> [b] -> [c]
 apply = zipWith ($)
 
@@ -80,16 +83,30 @@ rankDg isBlackTurn number extFen highlightedRank = do
   let turnedSquares = if isBlackTurn then map (# rotateBy (1/2)) squares else squares
   foldl1 (|||) turnedSquares
 
-getHighlightedBoard :: (String, String) -> [[Bool]]
+rankCoords :: Bool -> Diagram B
+rankCoords isBlackTurn = do
+  let numbers = ['1'..'8']
+  let numbersDg = map ((# fontSize textSize) . text . (:[])) (if isBlackTurn then numbers else reverse numbers)
+  let sqs = map (\x -> x `atop` (square 1 # lw none)) numbersDg
+  foldl1 (===) sqs
+
+fileCoords :: Bool -> Diagram B
+fileCoords isBlackTurn = do
+  let files = ['a'..'h']
+  let filesDg = map ((# fontSize textSize) . text . (:[])) (" " ++ (if isBlackTurn then reverse files else files))
+  let sqs = map (\x -> x `atop` (square 1 # lw none)) filesDg
+  foldl1 (|||) sqs
+
+getHighlightedBoard :: Maybe (String, String) -> [[Bool]]
 getHighlightedBoard lastMove = case lastMove of
-    ((fromFile: fromRank: _), (toFile: toRank: _)) -> do
+    Just ((fromFile: fromRank: _), (toFile: toRank: _)) -> do
       let isHighlighted file rank = (file == fromFile && rank == fromRank) || (file == toFile && rank == toRank)
       reverse [[isHighlighted file rank | file <- ['a'..'h']] | rank <- ['1'..'8']]
     _ -> replicate 8 (replicate 8 False)
 
-fenToimage :: String -> (String, String) -> Double -> FilePath -> IO ()
-fenToimage fen lastMove width = do
-  let highlightBoard = getHighlightedBoard lastMove
+fenToimage :: String -> Maybe (String, String) -> Maybe Double -> FilePath -> IO ()
+fenToimage fen maybeLastMove maybeWidth = do
+  let highlightBoard = getHighlightedBoard maybeLastMove
   case words fen of
     (ranks:currentTurn:_) -> do
       let f = (\char -> if isDigit char
@@ -101,8 +118,15 @@ fenToimage fen lastMove width = do
       -- TODO: Find a better way than apply (apply)
       let ranksDg = apply (apply (map (rankDg isBlackTurn) rankNumbers) extRanks) highlightBoard
       let board = foldl1 (===) ranksDg
-      let turnedBoard = if isBlackTurn then board # rotateBy (1/2) else board
-      let dimensions = mkSizeSpec2D (Just width) (Just width)
+      let turnedBoard = centerXY (if isBlackTurn then board # rotateBy (1/2) else board)
+      let rCoords = centerXY $ rankCoords isBlackTurn
+      let fCoords = fileCoords isBlackTurn
+      let boardWithCoords = (fCoords === (rCoords ||| turnedBoard ||| rCoords) === fCoords) # bg white
+      let width = case maybeWidth of {
+        Just number -> number ;
+        _ -> 800
+      }
+      let dimensions = mkSizeSpec2D (Just width) Nothing
       let custonRender diagram file = renderCairo file dimensions diagram
-      custonRender turnedBoard
+      custonRender boardWithCoords
     _ -> error "Given FEN is wrong"
